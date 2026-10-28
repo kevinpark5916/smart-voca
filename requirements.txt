@@ -1,0 +1,6 @@
+# 2026-10-21 - SmartVoca - 실행·개발에 필요한 패키지
+# 파일 위치: requirements.txt
+PyQt6>=6.6
+pytest>=8.0
+# exe 빌드용 (ai-agent/scripts/build_exe.py)
+pyinstaller>=6.0
