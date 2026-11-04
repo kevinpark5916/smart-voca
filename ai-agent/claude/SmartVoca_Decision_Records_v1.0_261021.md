@@ -169,3 +169,26 @@
 - **결정**: 단어 목록은 `WordTableModel`(QAbstractTableModel), 이력 표는 `ListTableModel`을 쓴다. 열 너비는 고정값이다.
 - **결과**: 2000행 새로고침이 약 0.004초로 줄었다. 테스트 `test_word_list_refresh_is_fast_with_all_words`로 확인한다.
 - **재검토 조건**: 열 너비를 사용자가 자동으로 맞추길 원할 때 (그때는 모델 기준 계산으로 구현).
+
+## DR-17. 웹 버전 추가: Flask + HTML/JS, 로컬 전용 실행
+
+- **배경**: 사용자가 exe 대신 웹페이지 형태의 프로그램을 원한다 (2026-11-04). PyQt 화면 계층은 웹 화면으로 대체해야 하지만, 단어·암기·시험·채점·보고서 로직은 재사용하고 싶다.
+- **대안**
+  - A. Flask(또는 FastAPI) + HTML/CSS/JS: Python이 DB와 로직을 맡고 브라우저가 화면을 그린다
+  - B. Streamlit 또는 NiceGUI: Python만으로 화면 구현. 빠르지만 화면 제어와 상태 관리에 제약이 있다
+  - C. 순수 정적 웹(브라우저 JS만): 서버가 필요 없지만 Python 로직을 JS로 다시 짜야 한다
+  - 실행 범위: 로컬 전용(127.0.0.1) 또는 외부 공개(배포 서버, 로그인 설계 필요)
+- **결정**: A안, 로컬 전용. 웹 진입점은 `src/run_web.py`, 서버는 `src/web/`, 화면은 `src/web/templates`와 `src/web/static`에 둔다. 서버 주소는 `127.0.0.1:5000`으로 고정한다.
+- **근거**: 서비스 계층(`services`, `storage`, `quiz`, `study`, `report`)을 그대로 쓰므로 화면 계층만 바꾸면 된다. 개인 학습 기록이 외부에 노출되지 않는다 (NFR-07).
+- **구현 메모**
+  - 연속 학습일 계산을 `study/streak.py`로 옮겨 PyQt 없이도 쓰게 했다. `home_view.py`는 이 함수를 import한다.
+  - `StudyService._load`를 공개 메서드 `load`로 바꿨다. 웹 API가 세션을 다시 불러올 때 쓴다.
+  - 진행 중인 시험(`QuizRun`)은 서버 메모리(`app.config["QUIZ_RUNS"]`)에 둔다. 서버를 끄면 진행 중 시험은 사라지지만, 답한 문항은 DB에 남는다.
+  - Flask 개발 서버는 `threaded=False`로 실행한다. 한 번에 한 요청만 처리해서 SQLite 연결을 여러 스레드가 나눠 쓰지 않게 한다.
+  - 답하기 전에는 정답(`expected`, `accepted`)을 응답에 넣지 않는다.
+- **제약**
+  - 1인용 로컬 앱 전제다. 인증이 없으므로 외부 공개 전에 재설계가 필요하다.
+  - 설정 API(`/api/settings`)의 키는 `daily_new_count`처럼 `config.json`과 같은 snake_case를 쓴다. 나머지 API는 camelCase를 쓴다.
+  - 화면 기능은 데스크톱 MVP 범위만 옮겼다. TTS, 달력, 백업 등은 포함하지 않았다.
+- **재검토 조건**: 외부 공개 또는 여러 사용자 지원이 필요해질 때 (인증, DB 연결 구조 재설계). PyQt 버전 폐기 여부는 웹 버전이 실사용으로 검증된 뒤 결정한다.
+- **관련 결정**: DR-01 (GUI 라이브러리)은 웹 전환 이후 데스크톱 화면에만 적용된다.

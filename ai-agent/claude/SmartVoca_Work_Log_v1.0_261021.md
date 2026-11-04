@@ -74,3 +74,15 @@
 - 테스트: 54개 통과
 - exe: `dist/SmartVoca.exe` 재빌드 (임시 APPDATA로 기동 확인)
 - 미확인: 실제 화면에서 이력 탭과 단어 목록 새로고침 (수동)
+
+## 8. 웹 버전 추가 (2026-11-04, DR-17)
+
+- 요청: exe 대신 웹페이지로 프로그램을 다시 만든다. 방향 확인 후 Flask + HTML/JS, 로컬 전용(127.0.0.1)으로 진행
+- 백엔드: `src/web/` (app, common, serializers, api_study, api_quiz, api_history, api_home, api_words)
+- 화면: `src/web/templates/index.html`, `src/web/static/js/*.js` (홈, 암기, 시험, 이력, 단어 목록, 설정), `src/web/static/css/style.css`
+- 진입점: `src/run_web.py` (`python src/run_web.py` → http://127.0.0.1:5000)
+- 공용 정리: `study/streak.py` 분리, `StudyService._load` → `load`, 공통 화면 helper는 `api.js`에 둠
+- 테스트: `tests/test_web_api.py` 16개 추가. 전체 81개 통과
+- 실서버 확인: 페이지, 정적 파일, `/api/home`, `/api/settings`, `/api/history/quiz` GET 200 응답 (실제 DB 기준, 쓰기 요청은 보내지 않음)
+- 미확인: 브라우저에서 암기 단축키와 시험 흐름 수동 조작
+- 미커밋: 변경분은 아직 커밋하지 않음 (승인 대기)

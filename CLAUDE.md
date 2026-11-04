@@ -97,7 +97,8 @@ SDLC 단계별 산출물(§2), AI 에이전트 협업 지침(§3), 파일 관리
 
 - **패키지 설치**: `python -m pip install -r requirements.txt`
 - **테스트 실행**: `python -m pytest` (테스트 위치 `tests/`, 화면 테스트는 offscreen으로 실행)
-- **앱 실행**: `python src/main.py` (첫 실행 시 `data/words.csv`를 DB로 가져온다)
+- **앱 실행**: `python src/main.py` (데스크톱, 첫 실행 시 `data/words.csv`를 DB로 가져온다)
+- **웹 실행**: `python src/run_web.py` → 브라우저에서 `http://127.0.0.1:5000` (로컬 전용, DR-17)
 - **호스트 빌드**: Docker를 쓰지 않으므로 해당 없음. exe 배포(FR-23) 시 PyInstaller 사용
 - **캐시 함정**: 아직 확인된 항목 없음. 발견 시 이 섹션에 기록
 - **데이터 경로**: 개발 중 `data/` (DR-07). 배포 후 `%APPDATA%\SmartVoca\`로 전환
