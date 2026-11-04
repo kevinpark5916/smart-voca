@@ -2,30 +2,17 @@
 # -*- coding: utf-8 -*-
 # 2026-10-21 - SmartVoca - 홈 탭: 오늘 할 일, 전체 진도, 연속 학습일, 최근 정답률 (FR-07, FR-08)
 # 파일 위치: src/ui/home_view.py
-from datetime import date, timedelta
+from datetime import date
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QPushButton, QVBoxLayout, QWidget
 
 from app_context import AppContext
+from study.streak import compute_streak
 from ui.theme import scaled
 
 TAB_STUDY, TAB_QUIZ, TAB_HISTORY, TAB_WORDS = 1, 2, 3, 4  # 메인 창의 탭 번호
 RECENT_QUIZ_COUNT = 5  # 정답률을 계산할 최근 시험 수
-
-
-def compute_streak(study_dates: list[str], today: date) -> int:
-    """연속 학습일 수. 오늘 학습했으면 오늘부터, 아니면 어제부터 거꾸로 센다.
-
-    study_dates는 'YYYY-MM-DD' 문자열 목록이다 (순서는 상관없다).
-    """
-    days = {date.fromisoformat(value) for value in study_dates}
-    cursor = today if today in days else today - timedelta(days=1)
-    streak = 0
-    while cursor in days:
-        streak += 1
-        cursor -= timedelta(days=1)
-    return streak
 
 
 class HomeView(QWidget):

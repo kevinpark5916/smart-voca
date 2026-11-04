@@ -68,7 +68,7 @@ class StudyService:
         unfinished = self._study.find_unfinished_session()
         if unfinished:
             session_id, day_no = unfinished
-            return self._load(session_id, day_no)
+            return self.load(session_id, day_no)
 
         all_words = self._words.list_all()
         if not all_words:
@@ -84,12 +84,12 @@ class StudyService:
         session_id = self._study.create_session(
             day_no, [(item.word.id, item.kind) for item in plan], now
         )
-        return self._load(session_id, day_no)
+        return self.load(session_id, day_no)
 
     def answer(self, session: StudySession, record_id: int, result: str, now: datetime) -> StudySession:
         """현재 카드에 알았음/다시를 기록하고 갱신된 세션을 돌려준다. 마지막 카드면 세션을 끝낸다."""
         self._study.set_result(record_id, result, now)
-        updated = self._load(session.session_id, session.day_no)
+        updated = self.load(session.session_id, session.day_no)
         if updated.is_finished:
             self._study.finish_session(session.session_id, now)
         return updated
@@ -104,9 +104,9 @@ class StudyService:
             return session
         self._study.clear_result(answered[-1].record_id)
         self._study.reopen_session(session.session_id)
-        return self._load(session.session_id, session.day_no)
+        return self.load(session.session_id, session.day_no)
 
-    def _load(self, session_id: int, day_no: int) -> StudySession:
+    def load(self, session_id: int, day_no: int) -> StudySession:
         records = self._study.get_records(session_id)
         words_by_id = self._words.get_by_ids([record.word_id for record in records])
         cards = tuple(
