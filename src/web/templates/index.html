@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!-- 2026-11-04 - SmartVoca - 웹 화면 뼈대: 상단 탭과 화면 영역, 스크립트 로드 순서 -->
+<!-- 파일 위치: src/web/templates/index.html -->
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>스마트 보카</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-theme="light">
+  <header class="topbar">
+    <h1>스마트 보카</h1>
+    <nav id="tabs"></nav>
+  </header>
+  <main id="view" class="view"></main>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/study.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/words.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+/* 2026-11-04 - SmartVoca - 웹 화면 스타일: 밝은/어두운 테마, 글자 크기 3단계 (FR-22) */
+/* 파일 위치: src/web/static/css/style.css */
+
+:root {
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --text: #222831;
+  --muted: #6b7280;
+  --line: #d6dbe4;
+  --accent: #2f6fdd;
+  --correct: #1f8f4e;
+  --wrong: #c0392b;
+  --radius: 10px;
+}
+
+body[data-theme="dark"] {
+  --bg: #1b1e24;
+  --card: #262b34;
+  --text: #e6e9ef;
+  --muted: #9aa3b2;
+  --line: #3a414d;
+  --accent: #5b8def;
+  --correct: #3fbf74;
+  --wrong: #ff6b5b;
+}
+
+/* 글자 크기: 설정의 small/normal/large */
+html[data-font="small"] { font-size: 14px; }
+html[data-font="normal"] { font-size: 16px; }
+html[data-font="large"] { font-size: 19px; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.topbar h1 { font-size: 1.2em; margin: 0; }
+
+#tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.view {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 0 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+
+.card.center { text-align: center; }
+
+.study-card .word { font-size: 2.2em; margin: 16px 0; }
+
+.quiz-card .word { font-size: 2em; margin: 12px 0; }
+
+button, .button-link {
+  font: inherit;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button:hover:not(:disabled), .button-link:hover { border-color: var(--accent); }
+
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+button.know { background: var(--correct); border-color: var(--correct); }
+
+button.again { border-color: var(--wrong); color: var(--wrong); }
+
+button.ox { min-width: 96px; font-size: 1.4em; }
+
+input, select {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+}
+
+input[type="text"], input[type="search"] { min-width: 280px; }
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.form-row.inline { display: inline-flex; grid-template-columns: none; }
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.lead { font-size: 1.1em; }
+
+.hint, .example { color: var(--muted); }
+
+.example { font-style: italic; }
+
+.feedback {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 5px solid;
+}
+
+.feedback.correct { border-color: var(--correct); }
+
+.feedback.wrong { border-color: var(--wrong); }
+
+.progress {
+  height: 12px;
+  background: var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress .bar { height: 100%; background: var(--accent); }
+
+.table-scroll { max-height: 520px; overflow: auto; margin-top: 12px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+
+th, td {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+
+tr.clickable { cursor: pointer; }
+
+tr.clickable:hover { background: var(--bg); }
+
+.answer-detail { margin-top: 16px; }
+
+.import-result { margin-top: 12px; }
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  max-width: 420px;
+}
+
+.toast.error { background: var(--wrong); color: #fff; }
+
+[hidden] { display: none !important; }
