@@ -16,7 +16,7 @@
 | 주요 라이브러리 | PyQt6 (GUI), pytest (테스트), pyttsx3 (1차, TTS), openpyxl (2차, Excel 보고서) |
 | 프론트엔드 | PyQt6 데스크톱 GUI |
 | DB | SQLite (`data/smartvoca.db`, 표준 라이브러리 `sqlite3`) |
-| 실행 환경 | Windows 10/11 로컬 (Docker 미사용) |
+| 실행 환경 | Windows 10/11 로컬 (개발·데스크톱), 학교 서버 Docker 컨테이너 (웹 배포, DR-18) |
 
 ## 상위 정책 참조
 
@@ -99,7 +99,9 @@ SDLC 단계별 산출물(§2), AI 에이전트 협업 지침(§3), 파일 관리
 - **테스트 실행**: `python -m pytest` (테스트 위치 `tests/`, 화면 테스트는 offscreen으로 실행)
 - **앱 실행**: `python src/main.py` (데스크톱, 첫 실행 시 `data/words.csv`를 DB로 가져온다)
 - **웹 실행**: `python src/run_web.py` → 브라우저에서 `http://127.0.0.1:5000` (로컬 전용, DR-17)
-- **호스트 빌드**: Docker를 쓰지 않으므로 해당 없음. exe 배포(FR-23) 시 PyInstaller 사용
+- **호스트 빌드**: exe 배포(FR-23) 시 PyInstaller 사용 (`python ai-agent/scripts/build_exe.py`)
+- **컨테이너 빌드**: 리포 루트에서 `docker build -t smartvoca-web .` (Dockerfile). 실행은 `docker run --rm -p 8080:8080 -e SECRET_KEY=... -v smartvoca-data:/data smartvoca-web`. 웹 컨테이너는 Python 패키지를 `requirements-web.txt`로만 설치한다 (PyQt6 제외)
+- **컨테이너 주의**: 워커 1개, 스레드 1개로 실행한다 (진행 중 시험이 프로세스 메모리에 있음). DB는 환경변수 `DB_PATH`(`/data/voca.db`)를 따른다
 - **캐시 함정**: 아직 확인된 항목 없음. 발견 시 이 섹션에 기록
 - **데이터 경로**: 개발 중 `data/` (DR-07). 배포 후 `%APPDATA%\SmartVoca\`로 전환
 
@@ -140,6 +142,7 @@ SDLC 단계별 산출물(§2), AI 에이전트 협업 지침(§3), 파일 관리
 2. **문서명 규칙** (방법론 §4 파일 관리 규칙): `{Project_Name}_{EN_Name}_vX.X_YYMMDD.md`
    - `EN_Name` 은 방법론 §2 의 영문 산출물 명칭을 쓴다 (공백 대신 `_`). 예: `Requirement_Spec`, `Architecture_Design`
    - 예: `SmartVoca_Requirement_Spec_v1.0_261021.md`
+   - **과제 제출 문서(`docs/`)는 과제 규칙을 따른다** (2026-11-25): `분류_yymmdd_제목 vX.X.md` (예: `요구사항명세_251125_단어장 웹앱 v1.0.md`). 요구사항 ID는 `VOCA-FR-xxx`를 쓴다
    - 방법론에 없는 작업 문서는 `Review`, `Work_Plan`, `Work_Log` 를 `EN_Name` 으로 쓴다
    - 버전 업데이트: minor 증가 (v1.0 → v1.1 → v1.2). "버전 올리자" 요청 시 major 증가.
 
