@@ -63,7 +63,7 @@ function drawSetup() {
 async function startQuiz(options) {
   quizState.options = options;
   try {
-    const run = await api("/api/quiz/runs", { method: "POST", body: options });
+    const run = await api("api/quiz/runs", { method: "POST", body: options });
     beginRun(run);
   } catch (error) {
     showError(error);
@@ -72,7 +72,7 @@ async function startQuiz(options) {
 
 async function retryWrong() {
   try {
-    const run = await api(`/api/quiz/runs/${quizState.run.runId}/retry`, {
+    const run = await api(`api/quiz/runs/${quizState.run.runId}/retry`, {
       method: "POST",
       body: { direction: quizState.options.direction, questionType: quizState.options.questionType },
     });
@@ -136,7 +136,7 @@ async function submitAnswer(answer) {
   if (quizState.busy || quizState.feedback) return;
   quizState.busy = true;
   try {
-    const feedback = await api(`/api/quiz/runs/${quizState.run.runId}/answers`, {
+    const feedback = await api(`api/quiz/runs/${quizState.run.runId}/answers`, {
       method: "POST",
       body: { index: quizState.index, answer },
     });

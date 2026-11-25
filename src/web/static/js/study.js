@@ -7,7 +7,7 @@ const studyState = { root: null, session: null, status: "", revealed: false, sho
 window.Views.study = async function renderStudy(root) {
   studyState.root = root;
   root.replaceChildren(el("p", { text: "불러오는 중..." }));
-  const data = await api("/api/study/session");
+  const data = await api("api/study/session");
   setStudyData(data);
 };
 
@@ -38,7 +38,7 @@ async function studyRequest(path, body) {
 
 async function startNextDay() {
   try {
-    setStudyData(await api("/api/study/start", { method: "POST" }));
+    setStudyData(await api("api/study/start", { method: "POST" }));
   } catch (error) {
     showError(error);
   }
@@ -101,8 +101,8 @@ function studyButtons() {
   }
   return [
     el("button", { text: studyState.showExample ? "예문 숨기기 (E)" : "예문 보기 (E)", onclick: toggleExample }),
-    el("button", { class: "again", text: "다시 (Backspace)", onclick: () => studyRequest("/api/study/answer", { result: "again" }) }),
-    el("button", { class: "know primary", text: "알았음 (Enter)", onclick: () => studyRequest("/api/study/answer", { result: "know" }) }),
+    el("button", { class: "again", text: "다시 (Backspace)", onclick: () => studyRequest("api/study/answer", { result: "again" }) }),
+    el("button", { class: "know primary", text: "알았음 (Enter)", onclick: () => studyRequest("api/study/answer", { result: "know" }) }),
   ];
 }
 
@@ -126,7 +126,7 @@ function toggleExample() {
 }
 
 function undoStudy() {
-  studyRequest("/api/study/undo", {});
+  studyRequest("api/study/undo", {});
 }
 
 // 암기 화면 단축키. 다른 화면이거나 입력 중이면 무시한다
@@ -148,9 +148,9 @@ document.addEventListener("keydown", (event) => {
   } else if (studyState.revealed && (event.key === "e" || event.key === "E")) {
     toggleExample();
   } else if (studyState.revealed && event.key === "Enter") {
-    studyRequest("/api/study/answer", { result: "know" });
+    studyRequest("api/study/answer", { result: "know" });
   } else if (studyState.revealed && event.key === "Backspace") {
     event.preventDefault();
-    studyRequest("/api/study/answer", { result: "again" });
+    studyRequest("api/study/answer", { result: "again" });
   }
 });

@@ -60,8 +60,8 @@ async function loadHistory(startInput, endInput, panes) {
   const suffix = query.toString() ? `?${query}` : "";
   try {
     const [quizSessions, studySessions] = await Promise.all([
-      api(`/api/history/quiz${suffix}`),
-      api(`/api/history/study${suffix}`),
+      api(`api/history/quiz${suffix}`),
+      api(`api/history/study${suffix}`),
     ]);
     drawQuizHistory(panes.quiz, quizSessions);
     drawStudyHistory(panes.study, studySessions);
@@ -92,7 +92,7 @@ function drawQuizHistory(pane, sessions) {
 async function showQuizAnswers(pane, session) {
   const detail = pane.querySelector(".answer-detail");
   try {
-    const answers = await api(`/api/history/quiz/${session.sessionId}/answers`);
+    const answers = await api(`api/history/quiz/${session.sessionId}/answers`);
     const correct = answers.filter((answer) => answer.isCorrect).length;
     const rows = answers.map((answer) =>
       el("tr", {}, [
@@ -157,7 +157,7 @@ function downloadReport(startInput, endInput) {
   }
   const query = new URLSearchParams({ start: startInput.value, end: endInput.value });
   // 서버가 Content-Disposition: attachment로 보내므로 링크를 누르면 바로 저장된다
-  const link = el("a", { href: `/api/report?${query}` });
+  const link = el("a", { href: `api/report?${query}` });
   document.body.append(link);
   link.click();
   link.remove();

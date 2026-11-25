@@ -34,7 +34,7 @@ window.Views.words = function renderWords(root) {
       el("div", { class: "button-row" }, [
         fileInput,
         el("button", { class: "primary", text: "CSV 불러오기", onclick: () => importCsv(fileInput, resultBox, countLabel, listBox) }),
-        el("a", { class: "button-link", href: "/api/words/export", text: "CSV로 내보내기" }),
+        el("a", { class: "button-link", href: "api/words/export", text: "CSV로 내보내기" }),
       ]),
       resultBox,
     ])
@@ -94,10 +94,10 @@ function buildWordForm(onSaved) {
     };
     try {
       if (editingId === null) {
-        await api("/api/words", { method: "POST", body });
+        await api("api/words", { method: "POST", body });
         showToast("단어를 추가했습니다.");
       } else {
-        await api(`/api/words/${editingId}`, { method: "PUT", body });
+        await api(`api/words/${editingId}`, { method: "PUT", body });
         showToast("단어를 저장했습니다.");
       }
       reset();
@@ -126,7 +126,7 @@ function buildWordForm(onSaved) {
 async function loadWords(keyword, countLabel, listBox) {
   const query = keyword.trim() ? `?q=${encodeURIComponent(keyword.trim())}` : "";
   try {
-    const data = await api(`/api/words${query}`);
+    const data = await api(`api/words${query}`);
     countLabel.textContent = `${data.items.length} / ${data.total}개`;
     listBox.replaceChildren(wordTable(data.items, countLabel, listBox));
   } catch (error) {
@@ -160,7 +160,7 @@ function wordTable(items, countLabel, listBox) {
 async function deleteWord(word, countLabel, listBox) {
   if (!window.confirm(`'${word.word}' 단어를 지울까요?`)) return;
   try {
-    await api(`/api/words/${word.id}`, { method: "DELETE" });
+    await api(`api/words/${word.id}`, { method: "DELETE" });
     showToast("단어를 지웠습니다.");
     loadWords("", countLabel, listBox);
   } catch (error) {
@@ -177,7 +177,7 @@ async function importCsv(fileInput, resultBox, countLabel, listBox) {
   const form = new FormData();
   form.append("file", file);
   try {
-    const data = await api("/api/words/import", { method: "POST", form });
+    const data = await api("api/words/import", { method: "POST", form });
     const errorItems = data.errors.map((message) => el("li", { text: message }));
     resultBox.replaceChildren(
       el("p", { text: `${data.count}개 단어를 저장했습니다.` }),

@@ -43,7 +43,7 @@ function buildTabs() {
 async function start() {
   buildTabs();
   try {
-    window.applySettings(await api("/api/settings"));
+    window.applySettings(await api("api/settings"));
   } catch (error) {
     showError(error);
   }

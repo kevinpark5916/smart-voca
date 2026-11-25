@@ -34,7 +34,7 @@ async function loadStats(start, end, progressBox, bodyBox) {
     if (start) query.set("start", start);
     if (end) query.set("end", end);
     const suffix = query.toString() ? `?${query.toString()}` : "";
-    const [home, stats] = await Promise.all([api("/api/home"), api(`/api/stats${suffix}`)]);
+    const [home, stats] = await Promise.all([api("api/home"), api(`api/stats${suffix}`)]);
     progressBox.replaceChildren(progressSummary(home));
     bodyBox.replaceChildren(
       summaryLine(stats),

@@ -2,7 +2,7 @@
 // 파일 위치: src/web/static/js/home.js
 
 window.Views.home = async function renderHome(root) {
-  const data = await api("/api/home");
+  const data = await api("api/home");
 
   let plan;
   if (data.total === 0) {

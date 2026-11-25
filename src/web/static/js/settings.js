@@ -13,7 +13,7 @@ const NUMBER_FIELDS = [
 ];
 
 window.Views.settings = async function renderSettings(root) {
-  const settings = await api("/api/settings");
+  const settings = await api("api/settings");
   const inputs = {};
   const rows = NUMBER_FIELDS.map(([key, label, min, max, step]) => {
     const input = el("input", { type: "number", id: `setting-${key}`, min, step, value: settings[key] });
@@ -49,7 +49,7 @@ async function saveSettings(inputs) {
     }
   }
   try {
-    const saved = await api("/api/settings", { method: "PUT", body });
+    const saved = await api("api/settings", { method: "PUT", body });
     window.applySettings(saved);
     showToast("설정을 저장했습니다.");
   } catch (error) {
