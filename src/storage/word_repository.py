@@ -46,6 +46,52 @@ class WordRepository:
         ).fetchall()
         return {row["id"]: self._row_to_word(row) for row in rows}
 
+    def next_id(self) -> int:
+        """새 단어에 줄 번호. 지금 가장 큰 id 다음 값이다 (VOCA-FR-001)."""
+        return self._connection.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM word").fetchone()[0]
+
+    def insert_word(self, word: Word) -> None:
+        """단어 한 개를 추가한다. 중복 검사는 호출하는 서비스가 한다."""
+        with self._connection:
+            self._connection.execute(
+                "INSERT INTO word (id, word, pos, meaning, example, level) VALUES (?, ?, ?, ?, ?, ?)",
+                (word.id, word.word, word.pos, word.meaning, word.example, word.level),
+            )
+
+    def update_word(self, word: Word) -> None:
+        """id가 같은 단어의 내용을 바꾼다 (VOCA-FR-002)."""
+        with self._connection:
+            self._connection.execute(
+                "UPDATE word SET word = ?, pos = ?, meaning = ?, example = ?, level = ? WHERE id = ?",
+                (word.word, word.pos, word.meaning, word.example, word.level, word.id),
+            )
+
+    def delete_word(self, word_id: int) -> None:
+        """단어를 지운다. 기록이 있는지는 호출하는 서비스가 먼저 확인한다."""
+        with self._connection:
+            self._connection.execute("DELETE FROM word WHERE id = ?", (word_id,))
+
+    def get_by_id(self, word_id: int) -> Word | None:
+        row = self._connection.execute("SELECT * FROM word WHERE id = ?", (word_id,)).fetchone()
+        return self._row_to_word(row) if row else None
+
+    def find_by_text_ignore_case(self, text: str, exclude_id: int | None = None) -> Word | None:
+        """영단어가 같은 다른 단어를 대소문자 무시로 찾는다 (중복 검사)."""
+        row = self._connection.execute(
+            "SELECT * FROM word WHERE lower(word) = lower(?) AND id != ? LIMIT 1",
+            (text, exclude_id if exclude_id is not None else -1),
+        ).fetchone()
+        return self._row_to_word(row) if row else None
+
+    def has_study_or_quiz_records(self, word_id: int) -> bool:
+        """암기 기록이나 시험 응답이 하나라도 있으면 True. 이 단어는 지울 수 없다."""
+        row = self._connection.execute(
+            """SELECT EXISTS (SELECT 1 FROM study_record WHERE word_id = ?)
+            OR EXISTS (SELECT 1 FROM quiz_answer WHERE word_id = ?)""",
+            (word_id, word_id),
+        ).fetchone()
+        return bool(row[0])
+
     @staticmethod
     def _row_to_word(row: sqlite3.Row) -> Word:
         return Word(

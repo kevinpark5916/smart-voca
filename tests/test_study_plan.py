@@ -50,3 +50,17 @@ def test_day_must_be_positive(sample_words):
 def test_count_total_days_rounds_up():
     assert count_total_days(2000, 20) == 100
     assert count_total_days(2001, 20) == 101
+
+
+def test_wrong_words_fill_review_after_again_words(sample_words):
+    # 2026-11-25 - VOCA-FR-013: '다시' 단어 뒤에 자주 틀린 단어를 섞고, 합계는 복습 수 M을 넘지 않는다
+    settings = Settings(daily_new_count=5, daily_review_count=3)
+    plan = build_day_plan(sample_words, 2, settings, previous_again_ids=[20], wrong_word_ids=[25, 20, 26, 27])
+    review_ids = [item.word.id for item in plan if item.kind == KIND_REVIEW]
+    assert review_ids == [20, 25, 26]
+
+
+def test_wrong_word_inside_today_new_block_is_skipped(sample_words):
+    settings = Settings(daily_new_count=5, daily_review_count=5)
+    plan = build_day_plan(sample_words, 1, settings, previous_again_ids=[], wrong_word_ids=[2, 7])
+    assert [item.word.id for item in plan if item.kind == KIND_REVIEW] == [7]

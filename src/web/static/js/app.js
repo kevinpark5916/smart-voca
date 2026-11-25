@@ -6,6 +6,7 @@ const TAB_LIST = [
   ["study", "암기"],
   ["quiz", "시험"],
   ["history", "이력"],
+  ["stats", "통계"],
   ["words", "단어 목록"],
   ["settings", "설정"],
 ];

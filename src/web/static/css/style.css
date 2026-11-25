@@ -197,3 +197,15 @@ tr.clickable:hover { background: var(--bg); }
 .toast.error { background: var(--wrong); color: #fff; }
 
 [hidden] { display: none !important; }
+
+/* 2026-11-25 - 단어 추가 폼, 통계 화면 (VOCA-FR-001, VOCA-FR-031~033) */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 8px 0; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.stat-tile { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.stat-label { color: var(--muted); font-size: 0.9em; }
+.stat-value { font-size: 1.4em; font-weight: bold; margin-top: 4px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 180px; overflow-x: auto; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.bar-column { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 44px; height: 100%; }
+.bar-value { font-size: 0.8em; color: var(--muted); }
+.bar { width: 28px; background: var(--accent); border-radius: 4px 4px 0 0; margin-top: auto; }
+.bar-label { font-size: 0.75em; color: var(--muted); margin-top: 4px; }

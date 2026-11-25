@@ -191,3 +191,55 @@ def test_index_page_is_served(client):
     response = client.get("/")
     assert response.status_code == 200
     assert "스마트 보카".encode("utf-8") in response.data
+
+
+# 2026-11-25 - VOCA-FR-001, VOCA-FR-002: 단어 추가·수정·삭제 API
+def test_word_add_update_delete_over_api(client):
+    created = client.post("/api/words", json={"word": "lamp", "meaning": "등불", "pos": "n."})
+    assert created.status_code == 201
+    word_id = created.get_json()["id"]
+
+    duplicate = client.post("/api/words", json={"word": "LAMP", "meaning": "램프"})
+    assert duplicate.status_code == 400
+
+    updated = client.put(f"/api/words/{word_id}", json={"word": "lamp", "meaning": "등, 등불"})
+    assert updated.get_json()["meaning"] == "등, 등불"
+
+    deleted = client.delete(f"/api/words/{word_id}")
+    assert deleted.status_code == 200
+
+
+def test_word_delete_is_refused_after_study(client, context):
+    from datetime import datetime
+
+    context.study.create_session(1, [(1, "new")], datetime(2026, 11, 25, 9, 0))
+    response = client.delete("/api/words/1")
+    assert response.status_code == 400
+    assert "기록" in response.get_json()["error"]
+
+
+def test_word_add_requires_meaning(client):
+    response = client.post("/api/words", json={"word": "tree", "meaning": ""})
+    assert response.status_code == 400
+
+
+# 2026-11-25 - VOCA-FR-032, VOCA-FR-033: 통계 API는 이력으로 계산한다
+def test_stats_reports_daily_accuracy_and_top_wrong(client, context):
+    from datetime import datetime
+
+    now = datetime(2026, 11, 25, 9, 0)
+    session_id = context.quiz.create_session("ko_en", "short", 3, now)
+    context.quiz.record_answer(session_id, 1, "ko_en", "short", "뜻1", "word1", "word1", True, now)
+    context.quiz.record_answer(session_id, 2, "ko_en", "short", "뜻2", "word2", "x", False, now)
+    context.quiz.record_answer(session_id, 2, "ko_en", "short", "뜻2", "word2", "y", False, now)
+
+    data = client.get("/api/stats").get_json()
+    assert data["totalAnswers"] == 3
+    assert data["totalCorrect"] == 1
+    assert data["daily"][0]["date"] == "2026-11-25"
+    assert data["topWrong"][0] == {"word": "word2", "attempts": 2, "wrong": 2}
+
+
+def test_stats_rejects_reversed_range(client):
+    response = client.get("/api/stats?start=2026-12-01&end=2026-11-01")
+    assert response.status_code == 400

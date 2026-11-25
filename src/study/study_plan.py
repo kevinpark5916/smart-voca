@@ -22,11 +22,13 @@ def build_day_plan(
     day_no: int,
     settings: Settings,
     previous_again_ids: list[int],
+    wrong_word_ids: tuple[int, ...] | list[int] = (),
 ) -> list[PlanItem]:
     """N일차 암기 목록을 만든다. 복습 단어가 앞, 신규 단어가 뒤에 온다.
 
     - 신규: id 순서대로 (day_no-1)*N 번째부터 N개 (DR-06)
-    - 복습: 직전 세션에서 '다시'로 표시한 단어 중 최대 M개. 오늘의 신규 단어와 겹치면 뺀다.
+    - 복습: 직전 세션에서 '다시'로 표시한 단어를 먼저, 그다음 자주 틀린 단어(wrong_word_ids, 오답률 높은 순)를
+      최대 M개까지 담는다 (VOCA-FR-013). 오늘의 신규 단어와 겹치거나 중복되면 뺀다.
     """
     if day_no < 1:
         raise ValueError("일차는 1 이상이어야 합니다")
@@ -37,11 +39,13 @@ def build_day_plan(
 
     words_by_id = {word.id: word for word in ordered_words}
     review_words: list[Word] = []
-    for word_id in previous_again_ids:
+    picked_ids: set[int] = set()
+    for word_id in list(previous_again_ids) + list(wrong_word_ids):
         if len(review_words) >= settings.daily_review_count:
             break
-        if word_id in new_ids or word_id not in words_by_id:
+        if word_id in new_ids or word_id in picked_ids or word_id not in words_by_id:
             continue
+        picked_ids.add(word_id)
         review_words.append(words_by_id[word_id])
 
     return [PlanItem(word, KIND_REVIEW) for word in review_words] + [

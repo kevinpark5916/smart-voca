@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 # 2026-11-04 - SmartVoca - 웹 앱 조립: Flask 인스턴스, API 블루프린트, JSON 오류 응답, 화면 페이지
 # 파일 위치: src/web/app.py
+import os
+import secrets
+
 from flask import Flask, jsonify, render_template
 from werkzeug.exceptions import HTTPException
 
@@ -9,6 +12,7 @@ from app_context import AppContext
 from web.api_history import history_bp
 from web.api_home import home_bp
 from web.api_quiz import quiz_bp
+from web.api_stats import stats_bp
 from web.api_study import study_bp
 from web.api_words import words_bp
 
@@ -18,8 +22,10 @@ def create_app(context: AppContext) -> Flask:
     app.json.ensure_ascii = False  # 한글을 \uXXXX가 아닌 그대로 보낸다
     app.config["SMARTVOCA"] = context
     app.config["QUIZ_RUNS"] = {}
+    # 비밀값은 환경변수 SECRET_KEY로 받는다. 없으면 기동할 때 무작위로 만든다 (VOCA-NFR-004)
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
-    for blueprint in (home_bp, study_bp, quiz_bp, history_bp, words_bp):
+    for blueprint in (home_bp, study_bp, quiz_bp, history_bp, words_bp, stats_bp):
         app.register_blueprint(blueprint)
 
     @app.get("/")

@@ -8,15 +8,21 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from dataclasses import replace
+
 from config.settings import Settings, load_settings, save_settings
+from models.word import Word
 from paths import CONFIG_PATH, DB_PATH, WORDS_CSV_PATH
 from services.quiz_service import QuizService
 from services.study_service import StudyService
+from services.word_service import WordService
 from storage.database import Database
 from storage.quiz_repository import QuizRepository
 from storage.study_repository import StudyRepository
-from storage.word_csv import load_words_from_csv, save_words_to_csv
+from storage.word_csv import SIMPLE_ID_PLACEHOLDER, load_words_from_csv, save_words_to_csv
 from storage.word_repository import WordRepository
+
+WRONG_WORD_POOL_SIZE = 50  # 암기 복습에 섞을 자주 틀린 단어 후보 수 (VOCA-FR-013)
 
 
 @dataclass
@@ -31,6 +37,7 @@ class AppContext:
     settings_path: Path
     study_service: StudyService
     quiz_service: QuizService
+    word_service: WordService
 
     @classmethod
     def open(cls, db_path: Path = DB_PATH, settings_path: Path = CONFIG_PATH) -> "AppContext":
@@ -48,9 +55,11 @@ class AppContext:
             settings_path=settings_path,
             study_service=None,  # type: ignore[arg-type]  # 아래에서 바로 채운다
             quiz_service=None,  # type: ignore[arg-type]
+            word_service=WordService(words),
         )
         # 서비스는 항상 현재 설정을 읽도록 람다로 넘긴다
-        context.study_service = StudyService(words, study, lambda: context.settings)
+        wrong_provider = lambda: quiz.wrong_word_ids(WRONG_WORD_POOL_SIZE)  # noqa: E731
+        context.study_service = StudyService(words, study, lambda: context.settings, wrong_provider)
         context.quiz_service = QuizService(words, quiz, lambda: context.settings, random.Random())
         return context
 
@@ -66,8 +75,28 @@ class AppContext:
         words, errors = load_words_from_csv(path)
         if not words:
             return 0, errors
+        if words[0].id == SIMPLE_ID_PLACEHOLDER:
+            return self._import_simple_words(words, errors)
         try:
             count = self.words.upsert_many(words)
+        except sqlite3.IntegrityError as error:
+            return 0, errors + [f"DB 저장 실패: {error}"]
+        return count, errors
+
+    def _import_simple_words(self, words: list[Word], errors: list[str]) -> tuple[int, list[str]]:
+        """영단어·뜻 형식: DB에 이미 있는 영단어(대소문자 무시)는 건너뛰고, 나머지에 새 번호를 준다 (VOCA-FR-003)."""
+        existing = {word.word.lower() for word in self.words.list_all()}
+        next_number = self.words.next_id()
+        to_add: list[Word] = []
+        for word in words:
+            if word.word.lower() in existing:
+                errors.append(f"'{word.word}': 이미 있는 단어라 건너뜀")
+                continue
+            existing.add(word.word.lower())
+            to_add.append(replace(word, id=next_number))
+            next_number += 1
+        try:
+            count = self.words.upsert_many(to_add) if to_add else 0
         except sqlite3.IntegrityError as error:
             return 0, errors + [f"DB 저장 실패: {error}"]
         return count, errors

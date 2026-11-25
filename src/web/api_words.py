@@ -30,6 +30,30 @@ def list_words():
     return jsonify({"total": context.words.count(), "items": [word_to_dict(word) for word in words]})
 
 
+@words_bp.post("/words")
+def add_word():
+    """단어를 한 개 추가한다 (VOCA-FR-001). 필수 값은 영단어와 뜻이다."""
+    context = get_context()
+    word = context.word_service.add(json_body())
+    return jsonify(word_to_dict(word)), 201
+
+
+@words_bp.put("/words/<int:word_id>")
+def update_word(word_id: int):
+    """단어 내용을 고친다 (VOCA-FR-002)."""
+    context = get_context()
+    word = context.word_service.update(word_id, json_body())
+    return jsonify(word_to_dict(word))
+
+
+@words_bp.delete("/words/<int:word_id>")
+def delete_word(word_id: int):
+    """단어를 지운다. 학습·시험 기록이 있으면 400으로 막는다 (VOCA-FR-002)."""
+    context = get_context()
+    context.word_service.delete(word_id)
+    return jsonify(ok=True)
+
+
 @words_bp.post("/words/import")
 def import_words():
     """업로드한 CSV를 DB에 반영한다. 잘못된 행은 건너뛰고 사유 목록을 돌려준다 (FR-02)."""

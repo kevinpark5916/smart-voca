@@ -117,6 +117,26 @@ class QuizRepository:
         ).fetchone()
         return sessions, row["answers"], row["correct"]
 
+    def wrong_word_ids(self, limit: int) -> list[int]:
+        """오답률이 높은 단어 id 목록 (오답이 1번 이상인 단어만). 암기 복습에 섞는다 (VOCA-FR-013)."""
+        rows = self._connection.execute(
+            """SELECT word_id FROM quiz_answer GROUP BY word_id
+            HAVING SUM(1 - is_correct) > 0
+            ORDER BY SUM(1 - is_correct) * 1.0 / COUNT(*) DESC, SUM(1 - is_correct) DESC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+        return [row["word_id"] for row in rows]
+
+    def daily_accuracy(self, start_date: str, end_date: str) -> list[tuple[str, int, int]]:
+        """날짜별 (날짜, 응답 수, 정답 수). 날짜 오름차순. 정답률 추이 그래프에 쓴다 (VOCA-FR-032)."""
+        rows = self._connection.execute(
+            """SELECT substr(answered_at, 1, 10) AS day, COUNT(*) AS answers, SUM(is_correct) AS correct
+            FROM quiz_answer WHERE substr(answered_at, 1, 10) BETWEEN ? AND ?
+            GROUP BY day ORDER BY day""",
+            (start_date, end_date),
+        ).fetchall()
+        return [(row["day"], row["answers"], row["correct"]) for row in rows]
+
     def top_wrong_between(self, start_date: str, end_date: str, limit: int) -> list[tuple[str, int, int]]:
         """기간 안에서 자주 틀린 단어 목록 (단어, 응답 수, 오답 수). 오답이 많은 순."""
         rows = self._connection.execute(

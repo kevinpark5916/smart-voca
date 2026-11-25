@@ -55,10 +55,13 @@ class StudyService:
         words: WordRepository,
         study: StudyRepository,
         settings_provider: Callable[[], Settings],
+        wrong_word_provider: Callable[[], list[int]] | None = None,
     ):
         self._words = words
         self._study = study
         self._settings_provider = settings_provider
+        # 자주 틀린 단어 id 목록 (오답률 높은 순). 복습 단어가 부족할 때 섞는다 (VOCA-FR-013)
+        self._wrong_word_provider = wrong_word_provider
 
     def start_or_resume(self, now: datetime) -> StudySession | None:
         """끝나지 않은 세션이 있으면 이어 하고, 없으면 다음 일차를 새로 만든다.
@@ -80,7 +83,8 @@ class StudyService:
 
         previous_session_id = self._study.last_finished_session_id()
         review_ids = self._study.again_word_ids(previous_session_id) if previous_session_id else []
-        plan = build_day_plan(all_words, day_no, settings, review_ids)
+        wrong_ids = self._wrong_word_provider() if self._wrong_word_provider else []
+        plan = build_day_plan(all_words, day_no, settings, review_ids, wrong_ids)
         session_id = self._study.create_session(
             day_no, [(item.word.id, item.kind) for item in plan], now
         )
